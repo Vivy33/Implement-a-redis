@@ -1,0 +1,2 @@
+第一阶段：
+通过Redis的客户端redis-cli连接我们的Redis服务器，并可以进行简单的字符串的get和set操作，以及quit退出操作
