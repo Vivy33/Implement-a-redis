@@ -30,6 +30,26 @@ func newRedisServer(host string, port int) *redisServer {
 	return server
 }
 
+// 定期清理过期键
+func (s *redisServer) cleanExpiredKeys() {
+    ticker := time.NewTicker(time.Second)
+    defer ticker.Stop()
+
+    for range ticker.C {
+        for _, db := range s.dbs {
+            db.mu.Lock()
+            now := time.Now()
+            for key, expireTime := range db.expires {
+                if expireTime.(time.Time).Before(now) {
+                    delete(db.data, key)
+                    delete(db.expires, key)
+                }
+            }
+            db.mu.Unlock()
+        }
+    }
+}
+
 // 启动 Redis 服务端，监听客户端连接并处理请求
 func (s *redisServer) start() {
 	// 设置监听地址
